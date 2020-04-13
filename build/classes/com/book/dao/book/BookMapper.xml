@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+	PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.book.dao.book.BookMapper">
+	<select id="getcount" resultType="int">
+		select count(1) from system_book_info
+		<where>
+			<if test="bookName!=null and bookName!=''">
+				and bookName like concat('%',#{bookName},'%')
+			</if>
+		</where>
+	</select>
+	
+	<!-- 查询数据的方法 -->
+	<select id="getBookList" resultMap="blist">
+		select b.*,c.category from system_book_info b
+		inner join system_book_category c on(c.id=b.categoryId)
+		<where>
+			<if test="bookName!=null and bookName!=''">
+				and bookName like concat('%',#{bookName},'%')
+			</if>
+		</where>
+		limit #{from},#{pageSize}
+	</select>
+	<select id="findBookById" parameterType="int" resultMap="blist">
+		select id,bookName,author,categoryId,publisher,price,photo 
+			from system_book_info where id=#{id}
+	</select>
+	
+	<!-- 增加 -->
+	<insert id="addNewBook" parameterType="BookInfo">
+		<!-- #{category.id}？访问BookInfo对象的category属性，再访问category的id属性 -->
+		insert into system_book_info(bookName,author,categoryId,publisher,price,photo)
+			values(#{bookName},#{author},#{category.id},#{publisher},
+					#{price},#{photo})
+	</insert>
+	<!-- 删除 -->
+	<delete id="deleteBookById" parameterType="int">
+		delete from system_book_info where id=#{id}
+	</delete>
+	
+	<!-- 修改-->
+	<update id="alterBookById" parameterType="User">
+		update system_book_info 
+			<set>
+				<if test="bookName != null">
+					bookName=#{bookName},
+				</if>
+				<if test="author != null">
+					author=#{author},
+				</if>
+				<if test="publisher != null">
+					publisher=#{publisher},
+				</if>
+				<if test="price != null">
+					price=#{price},
+				</if>
+				<if test="photo != null">
+					photo=#{photo},
+				</if>
+				<if test="category.id != null">
+					categoryId=#{category.id},
+				</if>
+			</set>
+			<where>
+				id=#{id}
+			</where>
+	</update>
+	
+	<resultMap type="BookInfo" id="blist" autoMapping="true">
+		<!-- 为BookInfo实体类中的分类实体设置映射 -->
+		<association property="bookCategory" javaType="BookCategory" autoMapping="true">
+		</association>
+	</resultMap>
+</mapper>	
